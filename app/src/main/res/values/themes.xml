@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Base.Theme.SpotifyLite" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/accent_primary</item>
+        <item name="colorOnPrimary">@color/accent_on_primary</item>
+        <item name="colorPrimaryContainer">@color/accent_container</item>
+        <item name="colorOnPrimaryContainer">@color/accent_on_container</item>
+        <item name="colorSecondary">@color/accent_primary</item>
+        <item name="colorOnSecondary">@color/accent_on_primary</item>
+        <item name="colorSecondaryContainer">@color/accent_container</item>
+        <item name="colorOnSecondaryContainer">@color/accent_on_container</item>
+        <item name="android:colorBackground">@color/bg_canvas</item>
+        <item name="colorSurface">@color/bg_surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurfaceVariant">@color/bg_surface_elevated</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorOutline">@color/stroke_subtle</item>
+        <item name="colorOutlineVariant">@color/stroke_subtle</item>
+        <item name="colorError">@color/status_error_fg</item>
+        <item name="android:windowBackground">@color/bg_canvas</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:fontFamily">@font/work_sans_regular</item>
+        <item name="fontFamily">@font/work_sans_regular</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.SpotifyLite.BottomSheetDialog</item>
+    </style>
+
+    <style name="Theme.SpotifyLite" parent="Base.Theme.SpotifyLite" />
+
+    <style name="ThemeOverlay.SpotifyLite.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.SpotifyLite.BottomSheet</item>
+    </style>
+
+    <style name="Widget.SpotifyLite.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/bg_surface</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.SpotifyLite.TopRounded24</item>
+    </style>
+
+    <style name="ShapeAppearance.SpotifyLite.TopRounded24" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">24dp</item>
+        <item name="cornerSizeTopRight">24dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <style name="ShapeAppearance.SpotifyLite.Artwork12" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
+    <style name="ShapeAppearance.SpotifyLite.Artwork20" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
+</resources>

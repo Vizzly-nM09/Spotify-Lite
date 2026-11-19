@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Spotify Lite</string>
+
+    <string name="nav_download">Download</string>
+    <string name="nav_library">Library</string>
+
+    <string name="cd_toggle_theme">Switch light and dark theme</string>
+    <string name="cd_app_mark">Spotify Lite soundwave mark</string>
+    <string name="cd_paste_link">Paste link from clipboard</string>
+    <string name="cd_clear_url">Clear music link</string>
+    <string name="cd_play_pause">Play or pause current track</string>
+    <string name="cd_previous_track">Previous track</string>
+    <string name="cd_next_track">Next track</string>
+    <string name="cd_shuffle">Toggle shuffle playback</string>
+    <string name="cd_repeat">Cycle repeat mode</string>
+    <string name="cd_close_player">Close player</string>
+    <string name="cd_delete_track">Delete track</string>
+    <string name="cd_track_artwork">Track cover artwork</string>
+    <string name="cd_cancel_download">Cancel download</string>
+    <string name="cd_retry_download">Retry download</string>
+    <string name="cd_play_downloaded">Play downloaded track</string>
+    <string name="cd_clear_search">Clear search query</string>
+
+    <string name="download_heading">Download Music</string>
+    <string name="download_subheading">Paste a YouTube, Spotify, SoundCloud, or direct audio URL to save it offline.</string>
+    <string name="hint_music_url">Music link</string>
+    <string name="hint_custom_title">Track title (optional)</string>
+    <string name="helper_custom_title">Leave blank to use the original track title.</string>
+    <string name="label_wifi_only">Download on Wi-Fi only</string>
+    <string name="helper_wifi_only_on">WorkManager waits until an unmetered Wi-Fi network is connected.</string>
+    <string name="helper_wifi_only_off">Downloads start over Wi-Fi or mobile data.</string>
+    <string name="action_start_download">Download Track</string>
+    <string name="action_check_status">Check Status</string>
+    <string name="action_paste">Paste</string>
+
+    <string name="source_direct">Direct Audio</string>
+    <string name="source_youtube">YouTube</string>
+    <string name="source_spotify">Spotify (matched via YouTube)</string>
+    <string name="source_soundcloud">SoundCloud</string>
+    <string name="source_other">Audio Link</string>
+    <string name="chip_youtube">YouTube</string>
+    <string name="chip_spotify">Spotify</string>
+    <string name="chip_soundcloud">SoundCloud</string>
+    <string name="chip_direct">Direct MP3</string>
+    <string name="label_supported_sources">Supported sources</string>
+
+    <string name="banner_waiting_wifi">Waiting for Wi-Fi. Queued downloads will start automatically once Wi-Fi connects.</string>
+    <string name="section_queue_heading">Background Queue</string>
+    <string name="action_clear_finished">Clear Finished</string>
+    <string name="queue_empty_title">No background downloads yet</string>
+    <string name="queue_empty_body">Paste a link above to queue an audio download with WorkManager.</string>
+
+    <string name="status_enqueued_wifi">Waiting for Wi-Fi</string>
+    <string name="status_enqueued">Queued</string>
+    <string name="status_running">Downloading</string>
+    <string name="status_succeeded">Saved to Library</string>
+    <string name="status_failed">Download Failed</string>
+    <string name="status_cancelled">Cancelled</string>
+
+    <string name="error_empty_url">Enter a valid http or https music link.</string>
+    <string name="error_invalid_url">Link must start with http:// or https://.</string>
+    <string name="toast_clipboard_empty">Clipboard is empty.</string>
+    <string name="toast_enqueued_wifi">Queued. Download will begin on Wi-Fi.</string>
+    <string name="toast_enqueued_now">Download started in background.</string>
+    <string name="toast_no_active_job">No download has been queued yet.</string>
+    <string name="toast_notification_denied">Notifications are off. Enable them in settings to receive download alerts.</string>
+    <string name="status_toast_format">Latest download: %1$s</string>
+
+    <string name="library_heading">Your Library</string>
+    <string name="hint_search_library">Search tracks or artists</string>
+    <string name="library_count_single">1 saved track</string>
+    <string name="library_count_plural">%1$d saved tracks</string>
+    <string name="library_empty_title">Your offline library is empty</string>
+    <string name="library_empty_body">Tracks saved from the Download tab appear here and play offline in the background.</string>
+    <string name="action_go_to_download">Go to Download</string>
+    <string name="search_empty_title">No matching tracks</string>
+    <string name="search_empty_body">No saved tracks matched "%1$s".</string>
+    <string name="action_clear_search">Clear Search</string>
+
+    <string name="dialog_delete_title">Delete track?</string>
+    <string name="dialog_delete_message">Remove "%1$s" from your library and device storage?</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="toast_track_deleted">Deleted "%1$s".</string>
+
+    <string name="now_playing_label">Now Playing</string>
+    <string name="unknown_artist">Unknown Artist</string>
+    <string name="track_playing_badge">Playing</string>
+    <string name="repeat_off">Repeat off</string>
+    <string name="repeat_all">Repeat all</string>
+    <string name="repeat_one">Repeat one</string>
+
+    <string name="notif_channel_downloads_name">Music Downloads</string>
+    <string name="notif_channel_downloads_desc">Progress, completion, and error alerts for background music downloads.</string>
+    <string name="notif_downloading_title">Downloading music</string>
+    <string name="notif_resolving_text">Resolving audio stream...</string>
+    <string name="notif_complete_title">Download complete</string>
+    <string name="notif_complete_text">Saved "%1$s" to Music/SpotifyLite</string>
+    <string name="notif_failed_title">Download failed</string>
+    <string name="notif_failed_text">%1$s: %2$s</string>
+</resources>

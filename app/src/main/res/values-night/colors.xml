@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_canvas">#FF141517</color>
+    <color name="bg_surface">#FF1D1F23</color>
+    <color name="bg_surface_elevated">#FF262930</color>
+    <color name="bg_mini_player">#FF202328</color>
+    <color name="stroke_subtle">#FF333741</color>
+
+    <color name="text_primary">#FFF3F4F6</color>
+    <color name="text_secondary">#FFA1A7B3</color>
+
+    <color name="accent_primary">#FF2DD4BF</color>
+    <color name="accent_on_primary">#FF0B1F1D</color>
+    <color name="accent_container">#FF0D2B28</color>
+    <color name="accent_on_container">#FF2DD4BF</color>
+
+    <color name="status_warning_bg">#FF2B2212</color>
+    <color name="status_warning_fg">#FFFBBF24</color>
+    <color name="status_error_bg">#FF31181B</color>
+    <color name="status_error_fg">#FFFCA5A5</color>
+    <color name="status_success_bg">#FF132B1E</color>
+    <color name="status_success_fg">#FF4ADE80</color>
+</resources>
+
