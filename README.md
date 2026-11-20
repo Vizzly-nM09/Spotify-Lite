@@ -20,10 +20,12 @@ This project is an independent student assignment created strictly for education
   - Single YouTube, YouTube Music, YouTube Shorts, and SoundCloud links via `NewPipeExtractor`
   - Single Spotify track links (public oEmbed title/artist lookup matched against YouTube audio)
 - **Offline playback in the background:** `MusicPlaybackService` extends AndroidX Media3 `MediaSessionService` with `ExoPlayer`, keeping audio playing when leaving the app or locking the screen with system notification controls.
-- **Two-tab navigation with Mini-Player:**
+- **Three-tab navigation with Mini-Player:**
   - **Download:** Supported-source indicator strip, clipboard paste/clear URL input, optional custom title, Wi-Fi constraint switch, status check, and live WorkManager queue (cancel, retry, and play).
-  - **Library:** Searchable offline track list saved under `Music/SpotifyLite` via `MediaStore.Audio` (no runtime storage permission prompt on Android 10+), plus delete confirmation.
-  - **Mini-Player & Now Playing sheet:** Persistent player bar above the bottom navigation that expands into a sheet with artwork, circular seek bar, elapsed/total timers, previous/next, shuffle, and repeat modes.
+  - **Library:** Searchable offline track list saved under `Music/SpotifyLite` via `MediaStore.Audio` (no runtime storage permission prompt on Android 10+), with a `⋮` track menu to add tracks to playlists or delete them.
+  - **Playlists:** Create, rename, and delete custom playlists, add or remove tracks from your library, reorder both playlists and playlist tracks via long-press drag-and-drop, and play the full playlist queue.
+  - **Mini-Player & Now Playing sheet:** Persistent player bar above the bottom navigation that expands into a sheet with artwork, a **Lyrics** toggle, seek bar, elapsed/total timers, previous/next, shuffle, and repeat modes.
+- **Synced Lyrics (with offline cache):** Automatically fetches time-synced (`.lrc`) and plain lyrics from the public **LRCLIB** API and caches them locally for offline playback. Features a crossfade Artwork/Lyrics toggle, smooth active-line color/scale transitions, auto-scrolling, and tap-to-seek on any synced line.
 - **Light and Dark themes:** Includes a live theme toggle in the top bar with WCAG AA-verified contrast in both modes.
 
 ## Limitations
@@ -47,21 +49,27 @@ app/src/main/java/com/example/spotifylite/
 ├── SpotifyLiteApplication.java      # Theme, notification channels, NewPipe init
 ├── MainActivity.java                # Navigation, insets, MediaController & Mini-Player
 ├── data/
-│   └── TrackRepository.java         # Local JSON track & download job registry
+│   ├── LyricsRepository.java        # LRCLIB fetcher & offline lyrics cache
+│   └── TrackRepository.java         # Local JSON track, playlist & download job registry
 ├── model/
+│   ├── DownloadJobRecord.java
+│   ├── LrcLine.java
+│   ├── Playlist.java
 │   ├── Track.java
-│   └── DownloadJobRecord.java
+│   └── TrackLyrics.java
 ├── service/
 │   └── MusicPlaybackService.java    # Media3 MediaSessionService foreground player
 ├── ui/
 │   ├── PlaybackHost.java
 │   ├── download/                    # DownloadFragment & DownloadQueueAdapter
 │   ├── library/                     # LibraryFragment & TrackAdapter
-│   └── player/                      # NowPlayingBottomSheet
+│   ├── player/                      # NowPlayingBottomSheet & LyricsAdapter
+│   └── playlists/                   # PlaylistsFragment, PlaylistAdapter & PlaylistDialogs
 ├── utils/
 │   ├── AudioFileUtils.java          # MediaStore / app Music storage + progress copy
 │   ├── FormatUtils.java             # Duration, file size, and artist name formatting
 │   ├── LinkResolver.java            # Direct, YouTube/SoundCloud, and Spotify resolver
+│   ├── LrcParser.java               # .lrc timestamp parser & active-line lookup
 │   ├── NotificationHelper.java      # Download notification channels and builders
 │   ├── OkHttpNewPipeDownloader.java # NewPipeExtractor HTTP adapter
 │   └── ThemePreferences.java        # Light/Dark mode persistence
@@ -84,5 +92,4 @@ Run unit tests from Android Studio or via Gradle:
 ./gradlew testDebugUnitTest
 ```
 
-Unit tests cover link platform classification, filename sanitization, MIME/extension mapping ([LinkResolverTest.java](app/src/test/java/com/example/spotifylite/LinkResolverTest.java)), duration/file-size formatting, and artist name cleanup ([FormatUtilsTest.java](app/src/test/java/com/example/spotifylite/FormatUtilsTest.java)).
-
+Unit tests cover link platform classification, filename sanitization, MIME/extension mapping ([LinkResolverTest.java](app/src/test/java/com/example/spotifylite/LinkResolverTest.java)), duration/file-size formatting and artist name cleanup ([FormatUtilsTest.java](app/src/test/java/com/example/spotifylite/FormatUtilsTest.java)), and `.lrc` timestamp parsing and active-line lookup ([LrcParserTest.java](app/src/test/java/com/example/spotifylite/LrcParserTest.java)).
