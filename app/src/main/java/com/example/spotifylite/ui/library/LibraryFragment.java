@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -18,6 +19,7 @@ import com.example.spotifylite.data.TrackRepository;
 import com.example.spotifylite.databinding.FragmentLibraryBinding;
 import com.example.spotifylite.model.Track;
 import com.example.spotifylite.ui.PlaybackHost;
+import com.example.spotifylite.ui.playlists.PlaylistDialogs;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
@@ -58,8 +60,8 @@ public class LibraryFragment extends Fragment {
             }
 
             @Override
-            public void onDeleteClicked(Track track) {
-                confirmDeleteTrack(track);
+            public void onTrackMoreClicked(Track track, View anchor) {
+                showTrackMenu(track, anchor);
             }
         });
 
@@ -104,6 +106,24 @@ public class LibraryFragment extends Fragment {
         if (adapter != null) {
             adapter.setPlayingTrackId(trackId);
         }
+    }
+
+    private void showTrackMenu(Track track, View anchor) {
+        PopupMenu menu = new PopupMenu(requireContext(), anchor);
+        menu.getMenu().add(0, 1, 0, R.string.menu_add_to_playlist);
+        menu.getMenu().add(0, 2, 1, R.string.menu_delete_track);
+        menu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == 1) {
+                PlaylistDialogs.showAddToPlaylistDialog(requireContext(), repository, track);
+                return true;
+            }
+            if (item.getItemId() == 2) {
+                confirmDeleteTrack(track);
+                return true;
+            }
+            return false;
+        });
+        menu.show();
     }
 
     private void confirmDeleteTrack(Track track) {

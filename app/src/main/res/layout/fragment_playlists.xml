@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingStart="16dp"
+    android:paddingTop="20dp"
+    android:paddingEnd="16dp">
+
+    <LinearLayout
+        android:id="@+id/layoutPlaylistsList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/outfit_semibold"
+                android:letterSpacing="-0.02"
+                android:text="@string/playlists_heading"
+                android:textColor="@color/text_primary"
+                android:textSize="26sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnNewPlaylist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/outfit_semibold"
+                android:minHeight="48dp"
+                android:text="@string/action_new_playlist"
+                android:textAllCaps="false"
+                android:textColor="@color/accent_on_primary"
+                app:backgroundTint="@color/accent_primary"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_add"
+                app:iconPadding="6dp"
+                app:iconSize="18dp"
+                app:iconTint="@color/accent_on_primary" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="14dp"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPlaylists"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="16dp"
+                android:visibility="gone"
+                tools:listitem="@layout/item_playlist"
+                tools:visibility="visible" />
+
+            <LinearLayout
+                android:id="@+id/layoutPlaylistsEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:contentDescription="@null"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_soundwave_mark" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:fontFamily="@font/outfit_semibold"
+                    android:text="@string/playlists_empty_title"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:fontFamily="@font/work_sans_regular"
+                    android:gravity="center"
+                    android:lineSpacingExtra="2dp"
+                    android:text="@string/playlists_empty_body"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnEmptyCreatePlaylist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="@font/outfit_semibold"
+                    android:minHeight="48dp"
+                    android:text="@string/action_create_playlist"
+                    android:textAllCaps="false"
+                    android:textColor="@color/accent_on_primary"
+                    app:backgroundTint="@color/accent_primary"
+                    app:cornerRadius="12dp" />
+            </LinearLayout>
+        </FrameLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutPlaylistDetail"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btnBackPlaylists"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="-12dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/cd_back_to_playlists"
+                android:padding="12dp"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="@color/text_primary" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvDetailTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/outfit_semibold"
+                    android:letterSpacing="-0.02"
+                    android:maxLines="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="22sp"
+                    tools:text="Late Night Drive" />
+
+                <TextView
+                    android:id="@+id/tvDetailCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/work_sans_medium"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    tools:text="4 tracks" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btnDetailMore"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/cd_playlist_actions"
+                android:padding="12dp"
+                android:src="@drawable/ic_more_vert"
+                app:tint="@color/text_secondary" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPlayPlaylist"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/outfit_semibold"
+                android:minHeight="48dp"
+                android:text="@string/action_play_all"
+                android:textAllCaps="false"
+                android:textColor="@color/accent_on_primary"
+                app:backgroundTint="@color/accent_primary"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_play"
+                app:iconPadding="6dp"
+                app:iconSize="18dp"
+                app:iconTint="@color/accent_on_primary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddTracksToPlaylist"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/work_sans_medium"
+                android:minHeight="48dp"
+                android:text="@string/action_add_tracks"
+                android:textAllCaps="false"
+                android:textColor="@color/text_primary"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_add"
+                app:iconPadding="6dp"
+                app:iconSize="18dp"
+                app:iconTint="@color/text_primary"
+                app:strokeColor="@color/stroke_subtle" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="12dp"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPlaylistTracks"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="16dp"
+                android:visibility="gone"
+                tools:listitem="@layout/item_track" />
+
+            <TextView
+                android:id="@+id/tvPlaylistDetailEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/work_sans_regular"
+                android:gravity="center"
+                android:lineSpacingExtra="3dp"
+                android:padding="24dp"
+                android:text="@string/playlist_detail_empty"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+</FrameLayout>
+

@@ -12,6 +12,7 @@ import android.os.Looper;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -39,6 +40,7 @@ import com.example.spotifylite.ui.PlaybackHost;
 import com.example.spotifylite.ui.download.DownloadFragment;
 import com.example.spotifylite.ui.library.LibraryFragment;
 import com.example.spotifylite.ui.player.NowPlayingBottomSheet;
+import com.example.spotifylite.ui.playlists.PlaylistsFragment;
 import com.example.spotifylite.utils.FormatUtils;
 import com.example.spotifylite.utils.NotificationHelper;
 import com.example.spotifylite.utils.ThemePreferences;
@@ -51,11 +53,13 @@ import java.util.concurrent.ExecutionException;
 public class MainActivity extends AppCompatActivity implements PlaybackHost {
     private static final String TAG_DOWNLOAD = "tab_download";
     private static final String TAG_LIBRARY = "tab_library";
+    private static final String TAG_PLAYLISTS = "tab_playlists";
     private static final String STATE_ACTIVE_TAB = "active_tab_id";
 
     private ActivityMainBinding binding;
     private DownloadFragment downloadFragment;
     private LibraryFragment libraryFragment;
+    private PlaylistsFragment playlistsFragment;
     private int activeTabId = R.id.nav_download;
 
     @Nullable
@@ -76,8 +80,12 @@ public class MainActivity extends AppCompatActivity implements PlaybackHost {
         @Override
         public void onEvents(@NonNull Player player, @NonNull Player.Events events) {
             syncMiniPlayer();
+            String playingId = getCurrentPlayingTrackId();
             if (libraryFragment != null) {
-                libraryFragment.updatePlayingTrackId(getCurrentPlayingTrackId());
+                libraryFragment.updatePlayingTrackId(playingId);
+            }
+            if (playlistsFragment != null) {
+                playlistsFragment.updatePlayingTrackId(playingId);
             }
         }
     };
@@ -101,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements PlaybackHost {
         setupFragments(savedInstanceState);
         setupBottomNavigation();
         setupMiniPlayer();
+        setupBackNavigation();
         requestNotificationPermissionIfNeeded();
         handleLaunchIntent(getIntent());
     }
@@ -126,8 +135,12 @@ public class MainActivity extends AppCompatActivity implements PlaybackHost {
                     mediaController = controllerFuture.get();
                     mediaController.addListener(playerListener);
                     syncMiniPlayer();
+                    String playingId = getCurrentPlayingTrackId();
                     if (libraryFragment != null) {
-                        libraryFragment.updatePlayingTrackId(getCurrentPlayingTrackId());
+                        libraryFragment.updatePlayingTrackId(playingId);
+                    }
+                    if (playlistsFragment != null) {
+                        playlistsFragment.updatePlayingTrackId(playingId);
                     }
                     notifyNowPlayingControllerChanged(mediaController);
                     miniProgressHandler.post(miniProgressTicker);
@@ -217,11 +230,27 @@ public class MainActivity extends AppCompatActivity implements PlaybackHost {
         binding.btnToggleTheme.setOnClickListener(v -> ThemePreferences.toggleTheme(this));
     }
 
+    private void setupBackNavigation() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (activeTabId == R.id.nav_playlists
+                        && playlistsFragment != null
+                        && playlistsFragment.handleBackPress()) {
+                    return;
+                }
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+            }
+        });
+    }
+
     private void setupFragments(@Nullable Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             activeTabId = savedInstanceState.getInt(STATE_ACTIVE_TAB, R.id.nav_download);
             downloadFragment = (DownloadFragment) getSupportFragmentManager().findFragmentByTag(TAG_DOWNLOAD);
             libraryFragment = (LibraryFragment) getSupportFragmentManager().findFragmentByTag(TAG_LIBRARY);
+            playlistsFragment = (PlaylistsFragment) getSupportFragmentManager().findFragmentByTag(TAG_PLAYLISTS);
         }
 
         if (downloadFragment == null) {
@@ -229,6 +258,9 @@ public class MainActivity extends AppCompatActivity implements PlaybackHost {
         }
         if (libraryFragment == null) {
             libraryFragment = new LibraryFragment();
+        }
+        if (playlistsFragment == null) {
+            playlistsFragment = new PlaylistsFragment();
         }
 
         FragmentTransaction tx = getSupportFragmentManager().beginTransaction();
@@ -238,10 +270,15 @@ public class MainActivity extends AppCompatActivity implements PlaybackHost {
         if (!libraryFragment.isAdded()) {
             tx.add(R.id.fragmentContainer, libraryFragment, TAG_LIBRARY);
         }
+        if (!playlistsFragment.isAdded()) {
+            tx.add(R.id.fragmentContainer, playlistsFragment, TAG_PLAYLISTS);
+        }
         if (activeTabId == R.id.nav_library) {
-            tx.hide(downloadFragment).show(libraryFragment);
+            tx.hide(downloadFragment).hide(playlistsFragment).show(libraryFragment);
+        } else if (activeTabId == R.id.nav_playlists) {
+            tx.hide(downloadFragment).hide(libraryFragment).show(playlistsFragment);
         } else {
-            tx.hide(libraryFragment).show(downloadFragment);
+            tx.hide(libraryFragment).hide(playlistsFragment).show(downloadFragment);
         }
         tx.commitNow();
     }
@@ -251,23 +288,28 @@ public class MainActivity extends AppCompatActivity implements PlaybackHost {
         binding.bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_download) {
-                showTab(downloadFragment, libraryFragment, R.id.nav_download);
+                showTab(downloadFragment, R.id.nav_download);
                 return true;
             }
             if (id == R.id.nav_library) {
-                showTab(libraryFragment, downloadFragment, R.id.nav_library);
+                showTab(libraryFragment, R.id.nav_library);
+                return true;
+            }
+            if (id == R.id.nav_playlists) {
+                showTab(playlistsFragment, R.id.nav_playlists);
                 return true;
             }
             return false;
         });
     }
 
-    private void showTab(Fragment toShow, Fragment toHide, int tabId) {
+    private void showTab(Fragment toShow, int tabId) {
         activeTabId = tabId;
-        getSupportFragmentManager().beginTransaction()
-                .hide(toHide)
-                .show(toShow)
-                .commit();
+        FragmentTransaction tx = getSupportFragmentManager().beginTransaction();
+        if (toShow != downloadFragment) tx.hide(downloadFragment);
+        if (toShow != libraryFragment) tx.hide(libraryFragment);
+        if (toShow != playlistsFragment) tx.hide(playlistsFragment);
+        tx.show(toShow).commit();
     }
 
     private void setupMiniPlayer() {
@@ -393,6 +435,9 @@ public class MainActivity extends AppCompatActivity implements PlaybackHost {
         if (libraryFragment != null) {
             libraryFragment.updatePlayingTrackId(track.id);
         }
+        if (playlistsFragment != null) {
+            playlistsFragment.updatePlayingTrackId(track.id);
+        }
     }
 
     @Override
@@ -420,8 +465,12 @@ public class MainActivity extends AppCompatActivity implements PlaybackHost {
             }
         }
         syncMiniPlayer();
+        String playingId = getCurrentPlayingTrackId();
         if (libraryFragment != null) {
-            libraryFragment.updatePlayingTrackId(getCurrentPlayingTrackId());
+            libraryFragment.updatePlayingTrackId(playingId);
+        }
+        if (playlistsFragment != null) {
+            playlistsFragment.updatePlayingTrackId(playingId);
         }
     }
 

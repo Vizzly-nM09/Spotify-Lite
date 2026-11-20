@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -19,23 +18,73 @@ import com.example.spotifylite.model.Track;
 import com.example.spotifylite.utils.FormatUtils;
 import com.example.spotifylite.utils.LinkResolver;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
-public class TrackAdapter extends ListAdapter<Track, TrackAdapter.TrackViewHolder> {
+public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHolder> {
 
     public interface OnTrackInteractionListener {
         void onTrackClicked(Track track);
 
-        void onDeleteClicked(Track track);
+        void onTrackMoreClicked(Track track, View anchor);
     }
 
+    private final List<Track> items = new ArrayList<>();
     private final OnTrackInteractionListener listener;
     @Nullable
     private String playingTrackId;
 
     public TrackAdapter(OnTrackInteractionListener listener) {
-        super(DIFF_CALLBACK);
         this.listener = listener;
+    }
+
+    public void submitList(@Nullable List<Track> newItems) {
+        List<Track> next = newItems != null ? new ArrayList<>(newItems) : new ArrayList<>();
+        DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return items.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return next.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldPos, int newPos) {
+                return Objects.equals(items.get(oldPos).id, next.get(newPos).id);
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldPos, int newPos) {
+                return items.get(oldPos).equals(next.get(newPos));
+            }
+        });
+        items.clear();
+        items.addAll(next);
+        diff.dispatchUpdatesTo(this);
+    }
+
+    public void moveItem(int fromPosition, int toPosition) {
+        if (fromPosition < 0 || toPosition < 0
+                || fromPosition >= items.size() || toPosition >= items.size()) {
+            return;
+        }
+        Collections.swap(items, fromPosition, toPosition);
+        notifyItemMoved(fromPosition, toPosition);
+    }
+
+    public List<String> getCurrentIds() {
+        List<String> ids = new ArrayList<>(items.size());
+        for (Track t : items) {
+            if (t.id != null) {
+                ids.add(t.id);
+            }
+        }
+        return ids;
     }
 
     public void setPlayingTrackId(@Nullable String trackId) {
@@ -59,7 +108,12 @@ public class TrackAdapter extends ListAdapter<Track, TrackAdapter.TrackViewHolde
 
     @Override
     public void onBindViewHolder(@NonNull TrackViewHolder holder, int position) {
-        holder.bind(getItem(position));
+        holder.bind(items.get(position));
+    }
+
+    @Override
+    public int getItemCount() {
+        return items.size();
     }
 
     class TrackViewHolder extends RecyclerView.ViewHolder {
@@ -113,7 +167,7 @@ public class TrackAdapter extends ListAdapter<Track, TrackAdapter.TrackViewHolde
             }
 
             binding.cardTrack.setOnClickListener(v -> listener.onTrackClicked(track));
-            binding.btnDeleteTrack.setOnClickListener(v -> listener.onDeleteClicked(track));
+            binding.btnTrackMore.setOnClickListener(v -> listener.onTrackMoreClicked(track, v));
         }
 
         private String platformDisplay(@Nullable String platform) {
@@ -124,17 +178,4 @@ public class TrackAdapter extends ListAdapter<Track, TrackAdapter.TrackViewHolde
             return "Audio";
         }
     }
-
-    private static final DiffUtil.ItemCallback<Track> DIFF_CALLBACK = new DiffUtil.ItemCallback<Track>() {
-        @Override
-        public boolean areItemsTheSame(@NonNull Track oldItem, @NonNull Track newItem) {
-            return Objects.equals(oldItem.id, newItem.id);
-        }
-
-        @Override
-        public boolean areContentsTheSame(@NonNull Track oldItem, @NonNull Track newItem) {
-            return oldItem.equals(newItem);
-        }
-    };
 }
-

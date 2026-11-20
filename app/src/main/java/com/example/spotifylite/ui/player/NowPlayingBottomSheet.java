@@ -16,17 +16,27 @@ import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.Player;
 import androidx.media3.session.MediaController;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSmoothScroller;
 
 import com.bumptech.glide.Glide;
 import com.example.spotifylite.R;
+import com.example.spotifylite.data.LyricsRepository;
 import com.example.spotifylite.data.TrackRepository;
 import com.example.spotifylite.databinding.BottomSheetNowPlayingBinding;
+import com.example.spotifylite.model.LrcLine;
 import com.example.spotifylite.model.Track;
+import com.example.spotifylite.model.TrackLyrics;
 import com.example.spotifylite.ui.PlaybackHost;
 import com.example.spotifylite.utils.FormatUtils;
 import com.example.spotifylite.utils.LinkResolver;
+import com.example.spotifylite.utils.LrcParser;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.slider.Slider;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 public class NowPlayingBottomSheet extends BottomSheetDialogFragment {
     public static final String TAG = "NowPlayingBottomSheet";
@@ -37,6 +47,13 @@ public class NowPlayingBottomSheet extends BottomSheetDialogFragment {
     @Nullable
     private Track cachedTrack;
     private boolean userScrubbing = false;
+
+    private boolean isLyricsMode = false;
+    @Nullable
+    private String loadedLyricsTrackId;
+    private List<LrcLine> syncedLines = Collections.emptyList();
+    private LyricsAdapter lyricsAdapter;
+    private LinearLayoutManager lyricsLayoutManager;
 
     private final Handler progressHandler = new Handler(Looper.getMainLooper());
     private final Runnable progressTicker = new Runnable() {
@@ -70,6 +87,27 @@ public class NowPlayingBottomSheet extends BottomSheetDialogFragment {
         super.onViewCreated(view, savedInstanceState);
 
         binding.btnCloseSheet.setOnClickListener(v -> dismiss());
+
+        lyricsLayoutManager = new LinearLayoutManager(requireContext());
+        lyricsAdapter = new LyricsAdapter(timeMs -> {
+            MediaController live = resolveController();
+            if (live != null) {
+                live.seekTo(timeMs);
+            }
+        });
+        binding.rvLyrics.setLayoutManager(lyricsLayoutManager);
+        binding.rvLyrics.setAdapter(lyricsAdapter);
+        binding.rvLyrics.setItemAnimator(null);
+
+        binding.btnToggleLyrics.setOnClickListener(v -> {
+            isLyricsMode = !isLyricsMode;
+            applyStageMode(true);
+            if (isLyricsMode) {
+                loadLyricsForCurrentTrack(false);
+            }
+        });
+        binding.btnRetryLyrics.setOnClickListener(v -> loadLyricsForCurrentTrack(true));
+        applyStageMode(false);
 
         binding.btnSheetPlayPause.setOnClickListener(v -> {
             MediaController live = resolveController();
@@ -272,6 +310,17 @@ public class NowPlayingBottomSheet extends BottomSheetDialogFragment {
                 controller.isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play
         );
         syncTransportStates();
+
+        String trackId = cachedTrack != null ? cachedTrack.id : item.mediaId;
+        if (!Objects.equals(loadedLyricsTrackId, trackId)) {
+            loadedLyricsTrackId = null;
+            syncedLines = Collections.emptyList();
+            lyricsAdapter.submitLines(Collections.emptyList());
+            if (isLyricsMode) {
+                loadLyricsForCurrentTrack(false);
+            }
+        }
+
         updateProgressUi();
     }
 
@@ -329,6 +378,176 @@ public class NowPlayingBottomSheet extends BottomSheetDialogFragment {
             binding.sliderProgress.setEnabled(false);
             binding.sliderProgress.setValue(0f);
         }
+
+        if (isLyricsMode && !syncedLines.isEmpty()) {
+            int activeIdx = LrcParser.findActiveLineIndex(syncedLines, position);
+            if (activeIdx != lyricsAdapter.getActiveIndex()) {
+                lyricsAdapter.setActiveIndex(activeIdx);
+                if (activeIdx >= 0) {
+                    scrollToActiveLyric(activeIdx);
+                }
+            }
+        }
+    }
+
+    private void applyStageMode(boolean animate) {
+        if (binding == null || !isAdded()) {
+            return;
+        }
+        View incoming = isLyricsMode ? binding.lyricsContainer : binding.cardArtwork;
+        View outgoing = isLyricsMode ? binding.cardArtwork : binding.lyricsContainer;
+
+        incoming.animate().cancel();
+        outgoing.animate().cancel();
+
+        if (!animate) {
+            outgoing.setVisibility(View.GONE);
+            outgoing.setAlpha(1f);
+            incoming.setVisibility(View.VISIBLE);
+            incoming.setAlpha(1f);
+        } else {
+            incoming.setAlpha(0f);
+            incoming.setVisibility(View.VISIBLE);
+            incoming.animate().alpha(1f).setDuration(200L).start();
+            outgoing.animate()
+                    .alpha(0f)
+                    .setDuration(180L)
+                    .withEndAction(() -> {
+                        if (binding != null) {
+                            outgoing.setVisibility(View.GONE);
+                            outgoing.setAlpha(1f);
+                        }
+                    })
+                    .start();
+        }
+
+        int bgColor = ContextCompat.getColor(
+                requireContext(),
+                isLyricsMode ? R.color.accent_container : R.color.bg_surface
+        );
+        int fgColor = ContextCompat.getColor(
+                requireContext(),
+                isLyricsMode ? R.color.accent_on_container : R.color.text_primary
+        );
+        int strokeColor = ContextCompat.getColor(
+                requireContext(),
+                isLyricsMode ? R.color.accent_primary : R.color.stroke_subtle
+        );
+        binding.btnToggleLyrics.setBackgroundTintList(ColorStateList.valueOf(bgColor));
+        binding.btnToggleLyrics.setTextColor(fgColor);
+        binding.btnToggleLyrics.setIconTint(ColorStateList.valueOf(fgColor));
+        binding.btnToggleLyrics.setStrokeColor(ColorStateList.valueOf(strokeColor));
+    }
+
+    private void loadLyricsForCurrentTrack(boolean forceRefresh) {
+        if (binding == null || !isAdded()) {
+            return;
+        }
+        MediaController live = resolveController();
+        MediaItem item = live != null ? live.getCurrentMediaItem() : null;
+        if (item == null) {
+            return;
+        }
+        Track targetTrack = cachedTrack;
+        if (targetTrack == null) {
+            MediaMetadata meta = item.mediaMetadata;
+            targetTrack = new Track();
+            targetTrack.id = item.mediaId;
+            targetTrack.title = meta.title != null ? meta.title.toString() : "";
+            targetTrack.artist = meta.artist != null ? meta.artist.toString() : "";
+            targetTrack.durationMs = getEffectiveDurationMs(live);
+        }
+        final String requestedId = targetTrack.id;
+        if (!forceRefresh && Objects.equals(loadedLyricsTrackId, requestedId) && !syncedLines.isEmpty()) {
+            return;
+        }
+
+        binding.progressLyrics.setVisibility(View.VISIBLE);
+        binding.rvLyrics.setVisibility(View.GONE);
+        binding.scrollPlainLyrics.setVisibility(View.GONE);
+        binding.layoutLyricsEmpty.setVisibility(View.GONE);
+
+        LyricsRepository.getInstance(requireContext()).fetchLyrics(
+                targetTrack,
+                forceRefresh,
+                (lyrics, networkError) -> {
+                    if (binding == null || !isAdded()) {
+                        return;
+                    }
+                    MediaController current = resolveController();
+                    MediaItem currentItem = current != null ? current.getCurrentMediaItem() : null;
+                    if (currentItem == null || !Objects.equals(currentItem.mediaId, requestedId)) {
+                        return;
+                    }
+                    loadedLyricsTrackId = requestedId;
+                    renderLyrics(lyrics, networkError);
+                }
+        );
+    }
+
+    private void renderLyrics(@Nullable TrackLyrics lyrics, boolean networkError) {
+        if (binding == null || !isAdded()) {
+            return;
+        }
+        binding.progressLyrics.setVisibility(View.GONE);
+
+        if (lyrics != null && lyrics.hasSynced()) {
+            syncedLines = LrcParser.parse(lyrics.syncedLyrics);
+            if (!syncedLines.isEmpty()) {
+                lyricsAdapter.submitLines(syncedLines);
+                binding.rvLyrics.setVisibility(View.VISIBLE);
+                binding.scrollPlainLyrics.setVisibility(View.GONE);
+                binding.layoutLyricsEmpty.setVisibility(View.GONE);
+                updateProgressUi();
+                return;
+            }
+        }
+
+        syncedLines = Collections.emptyList();
+        if (lyrics != null && lyrics.hasPlain()) {
+            binding.tvPlainLyrics.setText(lyrics.plainLyrics.trim());
+            binding.scrollPlainLyrics.setVisibility(View.VISIBLE);
+            binding.rvLyrics.setVisibility(View.GONE);
+            binding.layoutLyricsEmpty.setVisibility(View.GONE);
+            return;
+        }
+
+        binding.rvLyrics.setVisibility(View.GONE);
+        binding.scrollPlainLyrics.setVisibility(View.GONE);
+        binding.layoutLyricsEmpty.setVisibility(View.VISIBLE);
+        binding.tvLyricsEmpty.setText(networkError
+                ? R.string.lyrics_offline_error
+                : R.string.lyrics_not_found);
+    }
+
+    private void scrollToActiveLyric(int position) {
+        if (binding == null || lyricsLayoutManager == null || !isAdded()) {
+            return;
+        }
+        LinearSmoothScroller scroller = new LinearSmoothScroller(requireContext()) {
+            @Override
+            protected int getVerticalSnapPreference() {
+                return SNAP_TO_START;
+            }
+
+            @Override
+            protected float calculateSpeedPerPixel(android.util.DisplayMetrics displayMetrics) {
+                return 110f / displayMetrics.densityDpi;
+            }
+
+            @Override
+            public int calculateDtToFit(
+                    int viewStart,
+                    int viewEnd,
+                    int boxStart,
+                    int boxEnd,
+                    int snapPreference
+            ) {
+                return (boxStart + (boxEnd - boxStart) / 2) - (viewStart + (viewEnd - viewStart) / 2);
+            }
+        };
+        scroller.setTargetPosition(position);
+        lyricsLayoutManager.startSmoothScroll(scroller);
     }
 
     private long getEffectiveDurationMs(MediaController live) {
